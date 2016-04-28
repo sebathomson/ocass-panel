@@ -332,6 +332,19 @@ class UtilsService
 		return $suma;
 	}
 
+	public function obtenerDiaActual()
+	{
+		$dia = new \DateTime();
+
+		$strDia = '';
+
+		$strDia .= $this->obtenerNombreDia($dia->format('N'));
+		$strDia .= ', ';
+		$strDia .= $dia->format('d');
+
+		return $strDia;
+	}
+
 	private function obtenerNombreMes($numero)
 	{
 		switch ($numero) {
@@ -374,6 +387,32 @@ class UtilsService
 			default:
 			return 'none';
 			break;
+		}
+	}
+
+	private function obtenerNombreDia($numero)
+	{
+		switch ($numero) {
+			case '1':
+			return 'Lunes';
+			break;
+			case '2':
+			return 'Martes';
+			break;
+			case '3':
+			return 'Miércoles';
+			break;
+			case '4':
+			return 'Jueves';
+			break;
+			case '5':
+			return 'Viernes';
+			break;
+			case '6':
+			return 'Sábado';
+			break;
+			case '7':
+			return 'Domingo';
 		}
 	}
 

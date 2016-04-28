@@ -84,6 +84,7 @@ class DefaultController extends Controller
             'diasmesactual' => $diasmesactual,
             'sucursales'    => $arrSucursales,
             'meses'         => $arrMeses,
+            'diaActual'     => $utilsService->obtenerDiaActual(),
             ]);
     }
 

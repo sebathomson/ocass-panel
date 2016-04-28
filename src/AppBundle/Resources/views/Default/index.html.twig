@@ -49,13 +49,6 @@
 			border-style: dashed!important;
 			border-right: 6px solid #ffd400!important;
 		}
-		.calle-ultima {
-			height: 77px;
-			background-color: #7d7f85;
-			border: 3px solid #fff!important;
-			border-style: dashed!important;
-			border-right: 6px solid #ffd400!important;
-		}
 		#img-logo, .img-vehiculo {
 			position: relative;
 		}
@@ -64,6 +57,9 @@
 		}
 		.popover {
 			max-width: 530px!important;
+		}
+		.img-vehiculo {
+			zoom: 0.8;
 		}
 		.data-curso {
 			position: relative;
@@ -141,6 +137,7 @@
 			</thead>
 			<tbody>
 				{% for sucursal in sucursales %}
+					{% set primer_row = loop.first %}
 					<tr>
 						<td>
 							{% if loop.first %}
@@ -151,7 +148,11 @@
 							<strong>EMPRESA:</strong> {{ sucursal.nombreEmpresa }} / <strong>SEDE</strong>: {{ sucursal.nombreSucursal }}
 						</td>
 						{% for mes in meses if mes.esPasado == false %}
-							<td></td>
+							<td>
+								{% if loop.first %}
+									<span id="span-dia-actual">{{ diaActual }}</span>
+								{% endif %}
+							</td>
 						{% endfor %}
 					</tr>
 					<tr>
@@ -169,7 +170,7 @@
 							<td class="text-center">
 								<strong>{{ key | replace({'_': ' '}) }}</strong>
 							</td>
-							<td class="calle {% if isLast %}-ultima{% endif %}">
+							<td class="calle">
 							{% for mesanio, mes in meses if mes.esPasado == true %}
 								{% for curso in cursos 
 									if curso.inicio_mes_anio == mesanio and 
@@ -184,13 +185,13 @@
 							{% endfor %}
 							</td>
 							{% for mesanio, mes in meses if mes.esPasado == false %}
-								<td class="calle{% if isLast %}-ultima{% endif %}">
+								<td class="calle calle-meses">
 									{% for curso in cursos 
 									if curso.inicio_mes_anio == mesanio and 
 									curso.Tipo_Curso == key and 
 									curso.Cod_sucursal == sucursal.idSucursal and 
 									curso.Cod_empresa == sucursal.idEmpresa %}
-									<div class="img-vehiculo" data-code="{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}">
+									<div class="img-vehiculo" data-code="{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}" data-numerodia="{{ curso.o_Fecha_Inicio | date('d') }}" data-cantidaddiasmes="{{ curso.o_Fecha_Inicio | date('t') }}">
 										<img src="{{ asset('bundles/app/images/' ~ curso.imagen_curso) }}" alt="Curso {{ curso.Cod_ot }}" style="background-color: #{{ curso.color_vehiculo }}" class="data-curso {# img-vehiculo-{{ key }} #}">
 										<span class="numeroCurso-{{ key }}">{{ curso.Cod_ot }}</span>
 									</div>
@@ -301,6 +302,63 @@
 			});
 		}
 
+		function posicionarVehiculos() {
+			$('.calle-meses').each(function(index, el) {
+				if ($(this).find('.img-vehiculo').size() > 0) {
+					width_calle                = $(this).width() - 25;
+					width_dia                  = width_calle / parseInt( $(this).find('.img-vehiculo').data('cantidaddiasmes') );
+					width_dia                  = parseInt( width_dia );
+					width_vehiculo             = $(this).find('.img-vehiculo').find('img').width();
+					cantidad_vehiculos_previos = 0;
+					dia_anterior               = null;
+					margen_acumulado           = null;
+					elemento_anterior          = null;
+
+					$(this).find('.img-vehiculo').each(function(index, el) {
+						margin_base = width_dia * $(this).data('numerodia');
+
+						if ( dia_anterior != null ) {
+
+							// Si este auto y el anterior, poseen el mismo día, hay salto.
+							if ($(this).data('numerodia') == dia_anterior) {
+
+								cantidad_vehiculos_previos = 0;
+								margen_acumulado           = 0;
+
+							} else if ($(this).data('numerodia') < dia_anterior) {
+
+								cantidad_vehiculos_previos = 0;
+								margen_acumulado           = 0;
+
+							} else if ($(this).data('numerodia') > dia_anterior) {
+								tamanio_veniculos_anteriores = cantidad_vehiculos_previos * (width_vehiculo);
+
+								if ( (tamanio_veniculos_anteriores + margen_acumulado) > margin_base) {
+
+									cantidad_vehiculos_previos = 0;
+									margen_acumulado           = 0;
+
+								} else {
+									margin_menos = tamanio_veniculos_anteriores + (margen_acumulado);
+									margin_base  = margin_base - margin_menos;
+									$(this).css('float', 'left');
+									elemento_anterior.css('float', 'left');
+									$(this).after('<div class="clearfix"></div>');
+								}
+							}
+						}
+
+						cantidad_vehiculos_previos = cantidad_vehiculos_previos + 1;
+						margen_acumulado           = margen_acumulado + margin_base;
+						dia_anterior               = $(this).data('numerodia');
+						elemento_anterior          = $(this);
+						$(this).css('margin-left', margin_base);
+						$(this).width(width_vehiculo);
+					});				
+				}
+			});
+		}
+
 		$(document).on('ready', function() {
 			generarPopovers();
 
@@ -315,6 +373,9 @@
 				$('#img-flecha-dia-actual').css('margin-left', margin);
 				$('#div-linea-dia-actual').css('margin-left', margin + 15);
 				$('#div-linea-dia-actual').css('height', $('.table-responsiveeee').height());
+				$('#span-dia-actual').css('margin-left', (ancho_equivalente_dia * {{ 'now' | date('d') }}));
+
+				posicionarVehiculos();				
 			}, 2000);
 
 			console.log('document: ready');
@@ -368,101 +429,6 @@
 					});
 				});
 			});
-
-			// $('.data-curso').on('click', function() {
-			// 	code = $(this).closest('.img-vehiculo').data('code');
-
-			// 	curso = cursos[code];
-
-			// 	html  = '';
-			// 	html += '<table class="table table-bordered table-striped table-condensed">';
-			// 	html += '<tbody>';
-
-			// 	fechaInicio = new Date(curso.Fecha_Inicio);
-			// 	fechaInicio = fechaInicio.getUTCDate()+'/'+fechaInicio.getUTCMonth()+'/'+fechaInicio.getUTCFullYear();
-
-			// 	html += '<tr>';
-			// 	html += '<th>Fecha Inicio</th>';
-			// 	html += '<td class="text-right">'+fechaInicio+'</td>';
-			// 	html += '<th>N° OTE</th>';
-			// 	html += '<td class="text-right">'+curso.Cod_ot+'</td>';
-			// 	html += '</tr>';
-
-			// 	html += '<tr>';
-			// 	html += '<th>Alumnos Inicio</th>';
-			// 	html += '<td class="text-right">'+curso.Num_Alumnos_inicio+'</td>';
-			// 	html += '<th>Alumnos al día hoy</th>';
-			// 	html += '<td class="text-right">'+curso.Num_Alumnos_Actual+'</td>';
-			// 	html += '</tr>';
-
-			// 	html += '<tr>';
-			// 	html += '<th>Capacidad Alumnos</th>';
-			// 	html += '<td class="text-right">'+curso.Capacidad_Alumnos+'</td>';
-			// 	html += '<th>% de Alumnos</th>';
-			// 	html += '<td class="text-right">'+curso.Porcentaje_Cap_Alumnos+'</td>';
-			// 	html += '</tr>';
-
-			// 	fechaTermino = new Date(curso.Fecha_termino);
-			// 	fechaTermino = fechaTermino.getUTCDate()+'/'+fechaTermino.getUTCMonth()+'/'+fechaTermino.getUTCFullYear();
-
-			// 	html += '<tr>';
-			// 	html += '<th>Fecha Término</th>';
-			// 	html += '<td class="text-right">'+fechaTermino+'</td>';
-			// 	html += '<th>Relator hoy</th>';
-			// 	html += '<td class="text-center">'+curso.Relator_Actual+'</td>';
-			// 	html += '</tr>';								
-
-			// 	html += '<tr>';
-			// 	html += '<th>Total facturado $</th>';
-			// 	html += '<td class="text-right">'+curso.Monto_Facturado+'</td>';
-			// 	html += '<th>Total recibido $</th>';
-			// 	html += '<td class="text-right">'+curso.Monto_Pagado+'</td>';
-			// 	html += '</tr>';	
-
-			// 	html += '<tr>';
-			// 	html += '<th>Costo devengado</th>';
-			// 	html += '<td class="text-right">'+curso.Costo_OT_devengado+'</td>';
-			// 	html += '<th>Costo real $</th>';
-			// 	html += '<td class="text-right">'+curso.Costo_OT_real+'</td>';
-			// 	html += '</tr>';					
-
-			// 	html += '<tr>';
-			// 	html += '<th>Utilidad Nominal $</th>';
-			// 	html += '<td class="text-right">'+curso.Utilidad_ot_nominal+'</td>';
-			// 	html += '<th>% Utilidad Nominal</th>';
-			// 	html += '<td class="text-right">'+curso.Porcentaje_Utilidad_nominal+'</td>';
-			// 	html += '</tr>';
-
-			// 	html += '<tr>';
-			// 	html += '<th>Utilidad Real $</th>';
-			// 	html += '<td class="text-right">'+curso.Utilidad_ot_real+'</td>';
-			// 	html += '<th>% Utilidad Real</th>';
-			// 	html += '<td class="text-right">'+curso.Porcentaje_Utilidad_real+'</td>';
-			// 	html += '</tr>';
-
-			// 	html += '<tr>';
-			// 	html += '<th>Tipo Curso</th>';
-			// 	html += '<td class="text-center">'+curso.Tipo_Curso.replace('_', ' ')+'</td>';
-			// 	html += '<th></th>';
-			// 	html += '<td></td>';
-			// 	html += '</tr>';
-
-			// 	html += '</tbody>';
-			// 	html += '</table>';
-
-			// 	bootbox.dialog({
-			// 		message: html,
-			// 		title: "Información Curso <b>"+curso.Cod_ot+"</b>",
-			// 		buttons: {
-			// 			ok: {
-			// 				label: "<span class='fa fa-check'></span> OK",
-			// 				className: "btn-info",
-			// 				callback: function() {
-			// 				}
-			// 			}
-			// 		}
-			// 	});				
-			// });
 
 			$(window).resize(function() {
 				if(windowWidth != $(window).width()){
