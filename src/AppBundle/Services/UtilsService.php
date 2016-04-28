@@ -211,7 +211,6 @@ class UtilsService
 	public function obtenerMesesEntreFechas($fechaInicio, $fechaTermino)
 	{
 		$fechaTermino   = new \DateTime( date($fechaTermino) );
-		$terminomesanio = $fechaTermino->format('Y').$fechaTermino->format('m');
 
 		$inicio     = (new \DateTime( date($fechaInicio) ))->modify('first day of this month');
 		$termino    = $fechaTermino->modify('last day of this month');

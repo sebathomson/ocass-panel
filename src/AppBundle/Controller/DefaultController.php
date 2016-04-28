@@ -70,7 +70,7 @@ class DefaultController extends Controller
         $arrCursosDisponibles = $utilsService->formatearNumeros($arrCursosDisponibles);
 
         foreach ($arrMeses as $key => $mes) {
-            if ($mes['esPasado'] == false) {
+            if ($mes['esPasado'] === false) {
                 $iniciomesanio = $key;
                 $diasmesactual = $mes[ 'numdias' ];
                 break;
