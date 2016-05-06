@@ -1,471 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-	<meta charset="UTF-8">
-	<title>OCASS Panel</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="{{ asset('bundles/app/css/bootstrap.min.css') }}">
-	<link rel="stylesheet" href="{{ asset('bundles/app/css/bootstrap-datepicker3.min.css') }}">
-	<link rel="stylesheet" href="{{ asset('bundles/app/css/font-awesome.min.css') }}">
-	<style>
-		body {
-			margin-top: 66px;
-		}
-		.modal-dialog {
-			width: 700px;
-		}
-		.table-bordered {
-			border: 6px solid #ffd400;
-			border-top: 6px solid #fff!important;
-		}
-		.table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, 
-		.table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
-			border: 6px solid #ffd400;
-		}
-		thead {
-			position: fixed;
-			margin-top: -42px;
-			margin-left: -6px;
-			z-index: 100;
-		}
-		thead th {
-			border: 6px solid #ffd400!important;
-			background-color: #fff;
-		}
-		#img-logo, .img-vehiculo img, #img-flecha-dia-actual {
-			cursor: pointer;
-		}
-		.sin-borde-inferior {
-			border-bottom-color: #fff!important;
-		}
-		.text-center {
-			text-align: center;
-			vertical-align: middle!important;
-		}
-		.huincha-verde-arriba {
-			background-image: url('{{ asset('bundles/app/images/huincha_verde_1.png') }}');
-			height: 52px;
-		}
-		.huincha-verde-abajo {
-			background-image: url('{{ asset('bundles/app/images/huincha_verde_2.png') }}');
-			height: 52px;
-		}
-		#th-costado-izquierdo {
-			border-bottom: 6px solid #fff!important;
-		}
-		.calle {
-			height: 77px;
-			background-color: #7d7f85;
-			border: 3px solid #fff!important;
-			border-style: dashed!important;
-			border-right: 6px solid #ffd400!important;
-		}
-		#img-logo, .img-vehiculo {
-			position: relative;
-		}
-		.popover-content {
-			width: 530px!important;
-		}
-		.popover {
-			max-width: 530px!important;
-		}
-		.img-vehiculo {
-			zoom: 0.8;
-		}
-		.data-curso {
-			position: relative;
-		}
-		.numeroCurso-A2_A3 {
-		    position: absolute;
-		    left: 35px;
-		    top: 30px;
-		    background-color: #000;
-		    color: #fff;
-		    font-weight: bold;
-		}
-		.numeroCurso-A4_A5 {
-		    position: absolute;
-		    left: 42px;
-		    top: 33px;
-		    background-color: #000;
-		    color: #fff;
-		    font-weight: bold;
-		}
-		.numeroCurso-CA3 {
-		    position: absolute;
-		    left: 110px;
-		    top: 30px;
-		    background-color: #000;
-		    color: #fff;
-		    font-weight: bold;
-		}
-		.numeroCurso-CA5 {
-		    position: absolute;
-		    left: 70px;
-		    top: 34px;
-		    background-color: #000;
-		    color: #fff;
-		    font-weight: bold;
-		}
-		.numeroCurso-B {
-		    position: absolute;
-		    left: 39px;
-		    top: 29px;
-		    background-color: #000;
-		    color: #fff;
-		    font-weight: bold;
-		}
-		.numeroCurso-D {
-		    position: absolute;
-		    left: 41px;
-		    top: 32px;
-		    background-color: #000;
-		    color: #fff;
-		    font-weight: bold;
-		}
-	</style>
-	<script src="{{ asset('bundles/app/js/jquery.min.js') }}"></script>
-	<script src="{{ asset('bundles/app/js/bootstrap.min.js') }}"></script>
-	<script src="{{ asset('bundles/app/js/bootbox.min.js') }}"></script>
-	<script src="{{ asset('bundles/app/js/bootstrap-datepicker.min.js') }}"></script>
-	<script src="{{ asset('bundles/app/js/bootstrap-datepicker.es.min.js') }}"></script>
+    {{ include('AppBundle:Default:_head.html.twig') }}
 </head>
 <body>
-	<div style="position: fixed;margin-top: -66px;background-color: #fff;width: 100%;z-index: 100;">
-		<img id="img-flecha-dia-actual" src="{{ asset('bundles/app/images/flecha.png') }}" width="30px">
-		<div id="div-linea-dia-actual" style="border-left: solid 1px green;"></div>
-	</div>
-	<div class="table-responsive">
-		<table class="table table-bordered">
-			<thead>
-				<tr>
-					<th id="th-costado-izquierdo" class="sin-borde-inferior"></th>
-					<th id="th-cursos-no-terminados">Cursos vigentes aún no terminados</th>
-					{% for mes in meses if mes.esPasado == false %}
-						<th id="mes-{{ mes.anio }}{{ mes.mes }}" class="th-mes">{{ mes.nombre | upper }} {{ mes.anio }}</th>
-					{% endfor %}
-				</tr>
-			</thead>
-			<tbody>
-				{% for sucursal in sucursales %}
-					{% set primer_row = loop.first %}
-					<tr>
-						<td {% if loop.first %}class="td-logo"{% endif %}>
-							{% if loop.first %}
-								<img id="img-logo" src="{{ asset('bundles/app/images/logo.png') }}" alt="Logo" width="25px">
-							{% endif %}
-						</td>
-						<td {% if loop.first %}class="td-nombre-empresa"{% endif %}>
-							<strong>EMPRESA:</strong> {{ sucursal.nombreEmpresa }} / <strong>SEDE</strong>: {{ sucursal.nombreSucursal }}
-						</td>
-						{% for mes in meses if mes.esPasado == false %}
-							<td id="mes-{{ mes.anio }}{{ mes.mes }}-base">
-								{% if loop.first %}
-									<span id="span-dia-actual">{{ diaActual }}</span>
-								{% endif %}
-							</td>
-						{% endfor %}
-					</tr>
-					<tr>
-						<td class="text-center">
-							<strong>CURSOS</strong><br><strong>CLASE</strong>
-						</td>
-						<td class="huincha-verde-arriba"></td>
-						{% for mes in meses if mes.esPasado == false %}
-							<td class="huincha-verde-arriba"></td>
-						{% endfor %}
-					</tr>
-					{% for key, tipos in sucursal.tiposCurso %}
-						{% set isLast = loop.last %}
-						<tr>
-							<td class="text-center">
-								<strong>{{ key | replace({'_': ' '}) }}</strong>
-							</td>
-							<td class="calle">
-							{% for mesanio, mes in meses if mes.esPasado == true %}
-								{% for curso in cursos 
-									if curso.inicio_mes_anio == mesanio and 
-									curso.Tipo_Curso == key and 
-									curso.Cod_sucursal == sucursal.idSucursal and 
-									curso.Cod_empresa == sucursal.idEmpresa %}
-									<div class="img-vehiculo" data-code="{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}">
-										<img src="{{ asset('bundles/app/images/' ~ curso.imagen_curso) }}" alt="Curso {{ curso.Cod_ot }}" style="background-color: #{{ curso.color_vehiculo }}" class="data-curso {# img-vehiculo-{{ key }} #}">
-										<span class="numeroCurso-{{ key }}">{{ curso.Cod_ot }}</span>
-									</div>
-								{% endfor %}
-							{% endfor %}
-							</td>
-							{% for mesanio, mes in meses if mes.esPasado == false %}
-								<td class="calle calle-meses ultimo-mes">
-									{% for curso in cursos 
-									if curso.inicio_mes_anio == mesanio and 
-									curso.Tipo_Curso == key and 
-									curso.Cod_sucursal == sucursal.idSucursal and 
-									curso.Cod_empresa == sucursal.idEmpresa %}
-									<div class="img-vehiculo" data-code="{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}" data-numerodia="{{ curso.o_Fecha_Inicio | date('d') }}" data-cantidaddiasmes="{{ curso.o_Fecha_Inicio | date('t') }}">
-										<img src="{{ asset('bundles/app/images/' ~ curso.imagen_curso) }}" alt="Curso {{ curso.Cod_ot }}" style="background-color: #{{ curso.color_vehiculo }}" class="data-curso {# img-vehiculo-{{ key }} #}">
-										<span class="numeroCurso-{{ key }}">{{ curso.Cod_ot }}</span>
-									</div>
-								{% endfor %}
-								</td>
-							{% endfor %}
-						</tr>
-					{% endfor %}
-					<tr>
-						<td class="sin-borde-inferior"></td>
-						<td class="huincha-verde-abajo"></td>
-						{% for mes in meses if mes.esPasado == false %}
-							<td class="huincha-verde-abajo"></td>
-						{% endfor %}
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
-	<script>
-		var windowWidth = $(window).width();
-		var cursos      = [];
-
-		{% for curso in cursos %}
-		cursos['{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}'] = {{ curso | json_encode() | raw() }};
-		{% endfor %}
-
-		function generarPopovers() {
-			$('.data-curso').each( function() {
-				code  = $(this).closest('.img-vehiculo').data('code');
-				curso = cursos[code];
-
-				html  = '';
-				html += '<table class="table table-bordered table-striped table-condensed">';
-				html += '<tbody>';
-
-				html += '<tr>';
-				html += '<th>Fecha Inicio</th>';
-				html += '<td class="text-right">'+curso.fecha_inicio_tooltip+'</td>';
-				html += '<th>N° OTE</th>';
-				html += '<td class="text-right">'+curso.Cod_ot+'</td>';
-				html += '</tr>';
-
-				html += '<tr>';
-				html += '<th>Alumnos Inicio</th>';
-				html += '<td class="text-right">'+curso.Num_Alumnos_inicio+'</td>';
-				html += '<th>Alumnos al día hoy</th>';
-				html += '<td class="text-right">'+curso.Num_Alumnos_Actual+'</td>';
-				html += '</tr>';
-
-				html += '<tr>';
-				html += '<th>Capacidad Alumnos</th>';
-				html += '<td class="text-right">'+curso.Capacidad_Alumnos+'</td>';
-				html += '<th>% de Alumnos</th>';
-				html += '<td class="text-right">'+curso.Porcentaje_Cap_Alumnos+'</td>';
-				html += '</tr>';
-
-				html += '<tr>';
-				html += '<th>Fecha Término</th>';
-				html += '<td class="text-right">'+curso.fecha_termino_tooltip+'</td>';
-				html += '<th>Relator hoy</th>';
-				html += '<td class="text-center">'+curso.Relator_Actual+'</td>';
-				html += '</tr>';								
-
-				html += '<tr>';
-				html += '<th>Total facturado $</th>';
-				html += '<td class="text-right">'+curso.Monto_Facturado+'</td>';
-				html += '<th>Total recibido $</th>';
-				html += '<td class="text-right">'+curso.Monto_Pagado+'</td>';
-				html += '</tr>';	
-
-				html += '<tr>';
-				html += '<th>Costo devengado</th>';
-				html += '<td class="text-right">'+curso.Costo_OT_devengado+'</td>';
-				html += '<th>Costo real $</th>';
-				html += '<td class="text-right">'+curso.Costo_OT_real+'</td>';
-				html += '</tr>';					
-
-				html += '<tr>';
-				html += '<th>Utilidad Nominal $</th>';
-				html += '<td class="text-right">'+curso.Utilidad_ot_nominal+'</td>';
-				html += '<th>% Utilidad Nominal</th>';
-				html += '<td class="text-right">'+curso.Porcentaje_Utilidad_nominal+'</td>';
-				html += '</tr>';
-
-				html += '<tr>';
-				html += '<th>Utilidad Real $</th>';
-				html += '<td class="text-right">'+curso.Utilidad_ot_real+'</td>';
-				html += '<th>% Utilidad Real</th>';
-				html += '<td class="text-right">'+curso.Porcentaje_Utilidad_real+'</td>';
-				html += '</tr>';
-
-				html += '<tr>';
-				html += '<th>Tipo Curso</th>';
-				html += '<td class="text-center">'+curso.Tipo_Curso.replace('_', ' ')+'</td>';
-				html += '<th>Rentabilidad</th>';
-				html += '<td class="text-right" style="background-color: #'+curso.color_vehiculo+'">'+curso.rentabilidad+'%</td>';
-				html += '</tr>';
-
-				html += '</tbody>';
-				html += '</table>';
-
-				placement = 'left';
-
-				if (curso.bloque == 1 || curso.bloque == 2) {
-					placement = 'right';				
-				}
-
-				$(this).popover({
-					'content': html,
-					'html': true,
-					'placement': placement,
-					'title': "Información Curso <b>"+curso.Cod_ot+"</b>"
-				});		
-			});
-		}
-
-		function posicionarVehiculos() {
-			$('.calle-meses').each(function(index, el) {
-				if ($(this).find('.img-vehiculo').size() > 0) {
-					width_calle                = $(this).width() - 25;
-					width_dia                  = width_calle / parseInt( $(this).find('.img-vehiculo').data('cantidaddiasmes') );
-					width_dia                  = parseInt( width_dia );
-					width_vehiculo             = $(this).find('.img-vehiculo').find('img').width();
-					cantidad_vehiculos_previos = 0;
-					dia_anterior               = null;
-					margen_acumulado           = null;
-					elemento_anterior          = null;
-
-					$(this).find('.img-vehiculo').each(function(index, el) {
-						margin_base = width_dia * $(this).data('numerodia');
-
-						if ( dia_anterior != null ) {
-
-							// Si este auto y el anterior, poseen el mismo día, hay salto.
-							if ($(this).data('numerodia') == dia_anterior) {
-
-								cantidad_vehiculos_previos = 0;
-								margen_acumulado           = 0;
-
-							} else if ($(this).data('numerodia') < dia_anterior) {
-
-								cantidad_vehiculos_previos = 0;
-								margen_acumulado           = 0;
-
-							} else if ($(this).data('numerodia') > dia_anterior) {
-								tamanio_veniculos_anteriores = cantidad_vehiculos_previos * (width_vehiculo);
-
-								if ( (tamanio_veniculos_anteriores + margen_acumulado) > margin_base) {
-
-									cantidad_vehiculos_previos = 0;
-									margen_acumulado           = 0;
-
-								} else {
-									margin_menos = tamanio_veniculos_anteriores + (margen_acumulado);
-									margin_base  = margin_base - margin_menos;
-									$(this).css('float', 'left');
-									elemento_anterior.css('float', 'left');
-									$(this).after('<div class="clearfix"></div>');
-								}
-							}
-						}
-
-						cantidad_vehiculos_previos = cantidad_vehiculos_previos + 1;
-						margen_acumulado           = margen_acumulado + margin_base;
-						dia_anterior               = $(this).data('numerodia');
-						elemento_anterior          = $(this);
-						$(this).css('margin-left', margin_base);
-						$(this).width(width_vehiculo);
-					});				
-				}
-			});
-		}
-
-		$(document).on('ready', function() {
-			generarPopovers();
-
-			setTimeout(function () {
-				posicionarVehiculos();
-
-				ancho_costado_izquierdo    = $('.td-logo').width();
-				ancho_cursos_no_terminados = $('.td-nombre-empresa').width();
-				ancho_equivalente_dia      = $('#mes-{{ iniciomesanio }}-base').width() / {{ diasmesactual }};
-
-				console.log('ancho_costado_izquierdo: ' + $('.td-logo').width());
-
-				margin = ancho_costado_izquierdo + ancho_cursos_no_terminados - 15;
-				margin = margin + (ancho_equivalente_dia * {{ 'now' | date('d') }}) + 16{# padding #} + 12{# bording #};
-
-				$('#img-flecha-dia-actual').css('margin-left', margin);
-				$('#div-linea-dia-actual').css('margin-left', margin + 15);
-				$('#div-linea-dia-actual').css('height', $('.table-responsiveeee').height());
-				$('#span-dia-actual').css('margin-left', (ancho_equivalente_dia * {{ 'now' | date('d') }}));
-
-
-				$('#th-costado-izquierdo').width( $('.td-logo').width() );
-				$('#th-cursos-no-terminados').width( $('.td-nombre-empresa').width() );
-				
-				{% for mes in meses if mes.esPasado == false %}
-					$('#mes-{{ mes.anio }}{{ mes.mes }}').width( $('#mes-{{ mes.anio }}{{ mes.mes }}-base').width() );
-				{% endfor %}
-			}, 2000);
-
-			console.log('document: ready');
-
-			$('#img-logo').on('click', function() {
-				console.log('img-logo: click');
-
-				$.post("{{ path('obtenerSelectSucursales') }}", null, function(data) {
-					console.log('obtenerSelectSucursales: ajax-post');
-					bootbox.dialog({
-						message: data,
-						title: "Seleccionar Empresa / Sede",
-						buttons: {
-							volver: {
-								label: "<span class='fa fa-arrow-left'></span> Volver",
-								className: "btn-default",
-								callback: function() {
-									console.log('seleccionar-empresa-volver: click');
-								}
-							},
-							seleccionar: {
-								label: "<span class='fa fa-check'></span> Seleccionar",
-								className: "btn-success",
-								callback: function() {
-									console.log('seleccionar-empresa-seleccionar: click');
-									$('#form-select-sucursales').submit();
-								}
-							}
-						}
-					});
-				});
-			});
-
-			$('#img-flecha-dia-actual').on('click', function() {
-				console.log('img-flecha-dia-actual: click');
-
-				$.post("{{ path('obtenerVistaReporte') }}", null, function(data) {
-					console.log('obtenerVistaReporte: ajax-post');
-					bootbox.dialog({
-						message: data,
-						closeButton: false, 
-						title: "Reporte <div class='pull-right'><a id='btn-filtros-reporte' class='btn btn-info'><span class='fa fa-filter'></span> Filtros</a></div>",
-						buttons: {
-							ok: {
-								label: "<span class='fa fa-check'></span> OK",
-								className: "btn-info",
-								callback: function() {
-								}
-							}
-						}
-					});
-				});
-			});
-
-			$(window).resize(function() {
-				if(windowWidth != $(window).width()){
-					$('body').html('<center>Renderizando panel...</center>');
-					location.reload();
-					return;
-				}
-			});
-		});
-</script>
+    <div style="position: fixed;margin-top: -66px;background-color: #fff;width: 100%;z-index: 100;">
+        <img id="img-flecha-dia-actual" src="{{ asset('bundles/app/images/flecha.png') }}" width="30px">
+        <div id="div-linea-dia-actual" style="border-left: solid 1px green;"></div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th id="th-costado-izquierdo" class="sin-borde-inferior"></th>
+                    <th id="th-cursos-no-terminados">Cursos vigentes aún no terminados</th>
+                    {% for mes in meses if mes.esPasado == false %}
+                        <th id="mes-{{ mes.anio }}{{ mes.mes }}" class="th-mes">{{ mes.nombre | upper }} {{ mes.anio }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for sucursal in sucursales %}
+                    {% set primer_row = loop.first %}
+                    <tr>
+                        <td {% if loop.first %}class="td-logo"{% endif %}>
+                            {% if loop.first %}
+                                <img id="img-logo" src="{{ asset('bundles/app/images/logo.png') }}" alt="Logo" width="25px">
+                            {% endif %}
+                        </td>
+                        <td {% if loop.first %}class="td-nombre-empresa"{% endif %}>
+                            <strong>EMPRESA:</strong> {{ sucursal.nombreEmpresa }} / <strong>SEDE</strong>: {{ sucursal.nombreSucursal }}
+                        </td>
+                        {% for mes in meses if mes.esPasado == false %}
+                            <td id="mes-{{ mes.anio }}{{ mes.mes }}-base">
+                                {% if loop.first %}
+                                    <span id="span-dia-actual">{{ diaActual }}</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="text-center">
+                            <strong>CURSOS</strong><br><strong>CLASE</strong>
+                        </td>
+                        <td class="huincha-verde-arriba"></td>
+                        {% for mes in meses if mes.esPasado == false %}
+                            <td class="huincha-verde-arriba"></td>
+                        {% endfor %}
+                    </tr>
+                    {% for key, tipos in sucursal.tiposCurso %}
+                        {% set isLast = loop.last %}
+                        <tr>
+                            <td class="text-center">
+                                <strong>{{ key | replace({'_': ' '}) }}</strong>
+                            </td>
+                            <td class="calle">
+                            {% for mesanio, mes in meses if mes.esPasado == true %}
+                                {% for curso in cursos 
+                                    if curso.inicio_mes_anio == mesanio and 
+                                    curso.Tipo_Curso == key and 
+                                    curso.Cod_sucursal == sucursal.idSucursal and 
+                                    curso.Cod_empresa == sucursal.idEmpresa %}
+                                    <div class="img-vehiculo" data-code="{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}">
+                                        <img src="{{ asset('bundles/app/images/' ~ curso.imagen_curso) }}" alt="Curso {{ curso.Cod_ot }}" style="background-color: #{{ curso.color_vehiculo }}" class="data-curso {# img-vehiculo-{{ key }} #}">
+                                        <span class="numeroCurso-{{ key }}">{{ curso.Cod_ot }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                            </td>
+                            {% for mesanio, mes in meses if mes.esPasado == false %}
+                                <td class="calle calle-meses ultimo-mes">
+                                    {% for curso in cursos 
+                                    if curso.inicio_mes_anio == mesanio and 
+                                    curso.Tipo_Curso == key and 
+                                    curso.Cod_sucursal == sucursal.idSucursal and 
+                                    curso.Cod_empresa == sucursal.idEmpresa %}
+                                    <div class="img-vehiculo" data-code="{{ curso.Cod_ot }}-{{ curso.Cod_sucursal }}-{{ curso.Cod_empresa }}" data-numerodia="{{ curso.o_Fecha_Inicio | date('d') }}" data-cantidaddiasmes="{{ curso.o_Fecha_Inicio | date('t') }}">
+                                        <img src="{{ asset('bundles/app/images/' ~ curso.imagen_curso) }}" alt="Curso {{ curso.Cod_ot }}" style="background-color: #{{ curso.color_vehiculo }}" class="data-curso {# img-vehiculo-{{ key }} #}">
+                                        <span class="numeroCurso-{{ key }}">{{ curso.Cod_ot }}</span>
+                                    </div>
+                                {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td class="sin-borde-inferior"></td>
+                        <td class="huincha-verde-abajo"></td>
+                        {% for mes in meses if mes.esPasado == false %}
+                            <td class="huincha-verde-abajo"></td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        {{ include('AppBundle:Default:_script.html.twig') }}
+    </script>
 </body>
 </html>
