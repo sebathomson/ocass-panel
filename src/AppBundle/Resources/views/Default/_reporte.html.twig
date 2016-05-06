@@ -1,3 +1,10 @@
+<style>
+    .table-reporte-comparativo thead {
+        position: relative;
+        margin: 0px;
+        z-index: 0;
+    }
+</style>
 <hr>
 <table class="table table-bordered table-condensed">
     <tbody>
@@ -34,8 +41,8 @@
             </td>
         </tr>
         <tr>
-            <td>
-                <table class="table table-condensed">
+            <td style="padding: 0px;">
+                <table class="table table-condensed table-reporte-comparativo">
                     <thead>
                         <tr>
                             <th></th>
@@ -51,7 +58,7 @@
                                 <td>{{ alumnosPorCurso[ 'actual' ][ key ][ 'suma_alumnos' ] }}</td>
                                 <td>
                                     {% if alumnosPorCurso[ 'actual' ][ key ][ 'suma_alumnos' ] != 0 %}
-                                        {{ (facturacion.actual / alumnosPorCurso[ 'actual' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
+                                        {{ (alumnosPorCurso[ 'actual' ][ key ][ 'monto_facturado' ] / alumnosPorCurso[ 'actual' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
                                     {% else %}
                                         0
                                     {% endif %}
@@ -68,8 +75,8 @@
                     </tbody>
                 </table>
             </td>
-            <td>
-                <table class="table table-condensed">
+            <td style="padding: 0px;">
+                <table class="table table-condensed table-reporte-comparativo">
                     <thead>
                         <tr>
                             <th></th>
@@ -85,7 +92,7 @@
                                 <td>{{ alumnosPorCurso[ 'anterior' ][ key ][ 'suma_alumnos' ] }}</td>
                                 <td>
                                     {% if alumnosPorCurso[ 'anterior' ][ key ][ 'suma_alumnos' ] != 0 %}
-                                        {{ (facturacion.anterior / alumnosPorCurso[ 'anterior' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
+                                        {{ (alumnosPorCurso[ 'anterior' ][ key ][ 'monto_facturado' ] / alumnosPorCurso[ 'anterior' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
                                     {% else %}
                                         0
                                     {% endif %}
@@ -112,8 +119,8 @@
             </td>
         </tr>
         <tr>
-            <td>
-                <table class="table table-condensed">
+            <td style="padding: 0px;">
+                <table class="table table-condensed table-reporte-comparativo">
                     <thead>
                         <tr>
                             <th></th>
@@ -129,7 +136,7 @@
                                 <td>{{ alumnosPorRelator[ 'actual' ][ key ][ 'suma_alumnos' ] }}</td>
                                 <td>
                                     {% if alumnosPorRelator[ 'actual' ][ key ][ 'suma_alumnos' ] != 0 %}
-                                        {{ (facturacion.actual / alumnosPorRelator[ 'actual' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
+                                        {{ (alumnosPorRelator[ 'actual' ][ key ][ 'monto_facturado' ] / alumnosPorRelator[ 'actual' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
                                     {% else %}
                                         0
                                     {% endif %}
@@ -146,8 +153,8 @@
                     </tbody>
                 </table>
             </td>
-            <td>
-                <table class="table table-condensed">
+            <td style="padding: 0px;">
+                <table class="table table-condensed table-reporte-comparativo">
                     <thead>
                         <tr>
                             <th></th>
@@ -163,7 +170,7 @@
                                 <td>{{ alumnosPorRelator[ 'anterior' ][ key ][ 'suma_alumnos' ] }}</td>
                                 <td>
                                     {% if alumnosPorRelator[ 'anterior' ][ key ][ 'suma_alumnos' ] != 0 %}
-                                        {{ (facturacion.anterior / alumnosPorRelator[ 'anterior' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
+                                        {{ (alumnosPorRelator[ 'anterior' ][ key ][ 'monto_facturado' ] / alumnosPorRelator[ 'anterior' ][ key ][ 'suma_alumnos' ]) | number_format(0, '.', '.') }}
                                     {% else %}
                                         0
                                     {% endif %}

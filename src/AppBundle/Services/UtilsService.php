@@ -64,6 +64,41 @@ class UtilsService
 		return $arrCursosDisponibles;
 	}
 
+	public function ordenarCursos($arrCursosDisponibles)
+	{
+		$arrOrdenPorFecha = [];
+
+		foreach ($arrCursosDisponibles as $key => $value) {
+			$empresa   = $value[ 'Cod_empresa' ];
+			$sucursal  = $value[ 'Cod_sucursal' ];
+			$tipoCurso = $value[ 'Tipo_Curso' ];
+			$bloque    = $value[ 'bloque' ];
+			$fecha     = $value[ 'o_Fecha_Inicio' ];
+
+			$curso = [];
+
+			$curso[ 'fecha' ] = $fecha->getTimestamp();
+			$curso[ 'key' ]   = $key;
+			$curso[ 'curso' ] = $value;
+
+			$arrOrdenPorFecha[ $empresa . $sucursal . $tipoCurso . $bloque ][] = $curso;
+		}
+
+		$arrCursosYaOrdenados = [];
+
+		foreach ($arrOrdenPorFecha as $cursos) {
+			$cursosOrdenados = $this->ordenarCursosDeUnTipoCurso($cursos);
+
+			ksort($cursosOrdenados);
+
+			foreach ($cursosOrdenados as $curso) {
+				$arrCursosYaOrdenados[] = $curso[ 'curso' ];
+			}
+		}
+
+		return $arrCursosYaOrdenados;
+	}
+
 	public function formatearNumeros($arrCursosDisponibles)
 	{
 		foreach ($arrCursosDisponibles as &$value) {
@@ -282,6 +317,10 @@ class UtilsService
 		}
 
 		foreach ($arrCursosReporte as $curso) {
+			if ($curso[ 'Monto_Facturado' ] == 0) {
+				continue;
+			}
+
 			$tipoCurso = strtoupper(str_replace(' ', '_', $curso[ 'Tipo_Curso' ]));
 			
 			$suma[ $tipoCurso ][ 'suma_alumnos' ]    += $curso[ 'Num_Alumnos_Actual' ];
@@ -320,6 +359,10 @@ class UtilsService
 		}
 
 		foreach ($arrCursosReporte as $curso) {
+			if ($curso[ 'Monto_Facturado' ] == 0) {
+				continue;
+			}
+			
 			$relator = $curso[ 'Relator_Actual' ];
 			
 			$suma[ $relator ][ 'suma_alumnos' ]    += $curso[ 'Num_Alumnos_Actual' ];
@@ -413,6 +456,30 @@ class UtilsService
 			case '7':
 			return 'Domingo';
 		}
+	}
+
+	private function ordenarCursosDeUnTipoCurso($arrCursos)
+	{
+		$cantidadCursos  = COUNT($arrCursos);
+		$cursosOrdenados = [];
+		$posicionInicial = 0;
+		$posicionFinal   = 1;
+
+		for ($i=0; $i <= $cantidadCursos; $i++) {
+			if (array_key_exists($i, $arrCursos)) {
+				$cursosOrdenados[ $posicionInicial ] = $arrCursos[ $i ];
+				$posicionInicial                     = $posicionInicial + 2;
+				unset( $arrCursos[ $i ] );
+			}
+
+			if (array_key_exists( ($cantidadCursos - $i), $arrCursos)) {
+				$cursosOrdenados[ $posicionFinal ] = $arrCursos[ $cantidadCursos - $i ];
+				$posicionFinal                     = $posicionFinal + 2;
+				unset( $arrCursos[ $cantidadCursos - $i ] );
+			}
+		}
+
+		return $cursosOrdenados;
 	}
 
 }

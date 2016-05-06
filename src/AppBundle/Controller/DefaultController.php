@@ -68,6 +68,7 @@ class DefaultController extends Controller
         $arrCursosDisponibles = $conexionWebservice->obtenerColorCurso( $arrCursosDisponibles );
 
         $arrCursosDisponibles = $utilsService->formatearNumeros($arrCursosDisponibles);
+        $arrCursosDisponibles = $utilsService->ordenarCursos($arrCursosDisponibles);
 
         foreach ($arrMeses as $key => $mes) {
             if ($mes['esPasado'] === false) {
@@ -202,11 +203,10 @@ class DefaultController extends Controller
         
         $arrCursosReporteActual   = $conexionWebservice->obtenerCursosDisponiblesReporte( $arrSucursales, $inicio, $fin );
         $arrCursosReporteAnterior = $conexionWebservice->obtenerCursosDisponiblesReporte( $arrSucursales, $inicioAnterior, $finAnterior );
-        
+
         $comision[ 'actual' ]    = $conexionWebservice->obtenerComisionSucursales( $arrSucursales, $inicio, $fin );
         $comision[ 'anterior' ]  = $conexionWebservice->obtenerComisionSucursales( $arrSucursales, $inicioAnterior, $finAnterior );
         $arrReturn[ 'comision' ] = $comision;
-
 
         $facturacion[ 'actual' ]    = $utilsService->obtenerSumaFacturacion( $arrCursosReporteActual );
         $facturacion[ 'anterior' ]  = $utilsService->obtenerSumaFacturacion( $arrCursosReporteAnterior );

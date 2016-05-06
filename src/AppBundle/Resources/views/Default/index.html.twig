@@ -9,17 +9,28 @@
 	<link rel="stylesheet" href="{{ asset('bundles/app/css/font-awesome.min.css') }}">
 	<style>
 		body {
-			margin-top: 30px;
+			margin-top: 66px;
 		}
 		.modal-dialog {
 			width: 700px;
 		}
 		.table-bordered {
 			border: 6px solid #ffd400;
+			border-top: 6px solid #fff!important;
 		}
 		.table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, 
 		.table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th {
 			border: 6px solid #ffd400;
+		}
+		thead {
+			position: fixed;
+			margin-top: -42px;
+			margin-left: -6px;
+			z-index: 100;
+		}
+		thead th {
+			border: 6px solid #ffd400!important;
+			background-color: #fff;
 		}
 		#img-logo, .img-vehiculo img, #img-flecha-dia-actual {
 			cursor: pointer;
@@ -40,7 +51,7 @@
 			height: 52px;
 		}
 		#th-costado-izquierdo {
-			width: 1px;
+			border-bottom: 6px solid #fff!important;
 		}
 		.calle {
 			height: 77px;
@@ -120,18 +131,18 @@
 	<script src="{{ asset('bundles/app/js/bootstrap-datepicker.es.min.js') }}"></script>
 </head>
 <body>
-	<div style="position: absolute;margin-top: -30px;">
+	<div style="position: fixed;margin-top: -66px;background-color: #fff;width: 100%;z-index: 100;">
 		<img id="img-flecha-dia-actual" src="{{ asset('bundles/app/images/flecha.png') }}" width="30px">
 		<div id="div-linea-dia-actual" style="border-left: solid 1px green;"></div>
 	</div>
-	<div class="table-responsiveeee">
+	<div class="table-responsive">
 		<table class="table table-bordered">
 			<thead>
 				<tr>
 					<th id="th-costado-izquierdo" class="sin-borde-inferior"></th>
 					<th id="th-cursos-no-terminados">Cursos vigentes aún no terminados</th>
 					{% for mes in meses if mes.esPasado == false %}
-						<th id="mes-{{ mes.anio }}{{ mes.mes }}">{{ mes.nombre | upper }} {{ mes.anio }}</th>
+						<th id="mes-{{ mes.anio }}{{ mes.mes }}" class="th-mes">{{ mes.nombre | upper }} {{ mes.anio }}</th>
 					{% endfor %}
 				</tr>
 			</thead>
@@ -139,16 +150,16 @@
 				{% for sucursal in sucursales %}
 					{% set primer_row = loop.first %}
 					<tr>
-						<td>
+						<td {% if loop.first %}class="td-logo"{% endif %}>
 							{% if loop.first %}
 								<img id="img-logo" src="{{ asset('bundles/app/images/logo.png') }}" alt="Logo" width="25px">
 							{% endif %}
 						</td>
-						<td>
+						<td {% if loop.first %}class="td-nombre-empresa"{% endif %}>
 							<strong>EMPRESA:</strong> {{ sucursal.nombreEmpresa }} / <strong>SEDE</strong>: {{ sucursal.nombreSucursal }}
 						</td>
 						{% for mes in meses if mes.esPasado == false %}
-							<td>
+							<td id="mes-{{ mes.anio }}{{ mes.mes }}-base">
 								{% if loop.first %}
 									<span id="span-dia-actual">{{ diaActual }}</span>
 								{% endif %}
@@ -185,7 +196,7 @@
 							{% endfor %}
 							</td>
 							{% for mesanio, mes in meses if mes.esPasado == false %}
-								<td class="calle calle-meses">
+								<td class="calle calle-meses ultimo-mes">
 									{% for curso in cursos 
 									if curso.inicio_mes_anio == mesanio and 
 									curso.Tipo_Curso == key and 
@@ -221,7 +232,7 @@
 
 		function generarPopovers() {
 			$('.data-curso').each( function() {
-				code = $(this).closest('.img-vehiculo').data('code');
+				code  = $(this).closest('.img-vehiculo').data('code');
 				curso = cursos[code];
 
 				html  = '';
@@ -294,9 +305,16 @@
 				html += '</tbody>';
 				html += '</table>';
 
+				placement = 'left';
+
+				if (curso.bloque == 1 || curso.bloque == 2) {
+					placement = 'right';				
+				}
+
 				$(this).popover({
 					'content': html,
 					'html': true,
+					'placement': placement,
 					'title': "Información Curso <b>"+curso.Cod_ot+"</b>"
 				});		
 			});
@@ -363,9 +381,13 @@
 			generarPopovers();
 
 			setTimeout(function () {
-				ancho_costado_izquierdo    = $('#th-costado-izquierdo').width() + 16{# padding #} + 12{# bording #};
-				ancho_cursos_no_terminados = $('#th-cursos-no-terminados').width() + 16{# padding #} + 12{# bording #};
-				ancho_equivalente_dia      = $('#mes-{{ iniciomesanio }}').width() / {{ diasmesactual }};
+				posicionarVehiculos();
+
+				ancho_costado_izquierdo    = $('.td-logo').width();
+				ancho_cursos_no_terminados = $('.td-nombre-empresa').width();
+				ancho_equivalente_dia      = $('#mes-{{ iniciomesanio }}-base').width() / {{ diasmesactual }};
+
+				console.log('ancho_costado_izquierdo: ' + $('.td-logo').width());
 
 				margin = ancho_costado_izquierdo + ancho_cursos_no_terminados - 15;
 				margin = margin + (ancho_equivalente_dia * {{ 'now' | date('d') }}) + 16{# padding #} + 12{# bording #};
@@ -375,7 +397,13 @@
 				$('#div-linea-dia-actual').css('height', $('.table-responsiveeee').height());
 				$('#span-dia-actual').css('margin-left', (ancho_equivalente_dia * {{ 'now' | date('d') }}));
 
-				posicionarVehiculos();				
+
+				$('#th-costado-izquierdo').width( $('.td-logo').width() );
+				$('#th-cursos-no-terminados').width( $('.td-nombre-empresa').width() );
+				
+				{% for mes in meses if mes.esPasado == false %}
+					$('#mes-{{ mes.anio }}{{ mes.mes }}').width( $('#mes-{{ mes.anio }}{{ mes.mes }}-base').width() );
+				{% endfor %}
 			}, 2000);
 
 			console.log('document: ready');
